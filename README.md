@@ -1,2 +1,2 @@
-# asterisk-sublime-syntax
-Sublime syntax highlight for asterisk dialplan conf files.
+# asterisk syntax hightlight for sublime
+Sublime syntax highlight for asterisk 15 dialplan conf files. Uses default MONOKAI color scheme.
