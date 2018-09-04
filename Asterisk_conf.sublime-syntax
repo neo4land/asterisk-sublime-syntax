@@ -1,0 +1,394 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Asterisk 15+ conf
+file_extensions:
+  - conf
+scope: entity.asterisk.conf
+uuid: db3f61b8-020c-48e9-b0c4-d0183b6ad2e0
+
+variables:
+  context_name: '(?:[^[:cntrl:]\;\ \]]|(?<=\\)\;)*'
+  operators:  '(?i)\+|-|\/|\*|%|<<|>>|\^|\bAND\b|\bOR\b|\bXOR\b|<=|>=|==|<|>'
+  types:  \b(?:f(?:loat)?|i(?:nt)?|h(?:ex)?|c(?:har)?)\b
+  months: '(?:(?i)jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)'
+  wdays: '(?:(?i)sun|mon|tue|wed|thu|fri|sat)'
+  days: '(?:3[01]|[12]\d|0?[1-9])'
+  time: '(?:[01]?\d|2[0-3]):(?:[0-5]?\d)'
+  timespec: '(\*|(?:{{time}}-{{time}})),(\*|(?:{{wdays}}-{{wdays}})),(\*|(?:{{days}}-{{days}})),(\*|(?:{{months}}-{{months}}))'
+
+contexts:
+  prototype:
+    - include: comment
+  main:
+    - match: '(\[)(macro-)?({{context_name}})(\])(?:(\()(?:(!)|((?:[^[:cntrl:]\;\ \],]|(?<=\\)\;)*?))((?:,(?:[^[:cntrl:]\;\ \],]|(?<=\\)\;)*?)*)(\)))?'
+      captures:
+        1: keyword.operator
+        2: support.function
+        3: constant.language
+        4: keyword.operator
+        5: markup.inserted
+        6: keyword.operator
+        7: constant.language
+        8: constant.language
+        9: markup.inserted
+      push:
+        - meta_scope: meta.section
+        - match: '(?=\[)'
+          pop: true
+        - match: '^[ \t]*(exten)[ \t]*(=>?)[ \t]*([\w\-\*]+),(hint),'
+          captures:
+            1: keyword.other
+            2: keyword.operator
+            3: variable.parameter
+            4: support.function
+          push:
+            - meta_scope: meta.hint
+            - match: $
+              pop: true
+            - include: numerics
+            - include: keywords
+            - include: strings
+        - match: '^[ \t]*(exten)[ \t]*(=>?)[ \t]*(a|h|i|o|s|t|T|e|failed|fax|talk|receiver|[a-zA-Z0-9\*#\+]+[\w\*#\-]*|(_[\w\[\]\*\#\-\+]*\.?!?))(\/[a-zA-Z0-9\*\-#\+]+|\/(_[a-zA-Z0-9XZN\[\]\*\#\-\+]+\.?!?))?,(\d+|[sn]([\+\-]\d+)?|[a-zA-Z0-9]+\+101)(\([\w-]*?\))?,'
+          captures:
+            1: keyword.other
+            2: keyword.operator
+            3: variable.parameter
+            4: variable.parameter
+            5: variable.parameter
+            6: variable.parameter
+            7: support.function
+            8: support.function
+            9: string.quoted.double.json
+          push:
+            - meta_scope: meta.extension
+            - match: $
+              pop: true
+            - include: applications
+        - match: '^[ \t]*(same)[ \t]*(=>)[ \t]*(\d+|[sn]([\+\-]\d+)?|[a-zA-Z0-9]+\+101)(\([\w-]*?\))?,'
+          captures:
+            1: keyword.other
+            2: keyword.operator
+            3: support.function
+            4: support.function
+            5: string.quoted.double.json
+          push:
+            - meta_scope: meta.extension
+            - match: $
+              pop: true
+            - include: applications
+        - match: '^[ \t]*(ignorepat)[ \t]*(=>)[ \t]*(\d)'
+          captures:
+            1: keyword.control
+            2: keyword.operator
+            3: constant.numeric
+        - match: '^[ \t]*(include)[ \t]*(=>)[ \t]*({{context_name}})'
+          captures:
+            1: keyword.control
+            2: keyword.operator
+            3: constant.language
+        - match: ^[ \t]*([le]?switch)[ \t]*(=>)[ \t]*
+          captures:
+            1: keyword.control
+            2: keyword.operator
+          push:
+            - meta_scope: meta.expression
+            - match: $
+              pop: true
+            - include: variables
+        - match: '^[ \t]*(\#include|\#exec)[ \t]*?'
+          captures:
+            1: keyword.control
+          push:
+            - meta_scope: meta.command
+            - match: '(?<!\\)(")'
+              captures:
+                1: support.function
+              push:
+                - meta_scope: string
+                - match: '(?<!\\)(")'
+                  captures:
+                    1: support.function
+                  pop: true
+                - include: path_value
+            - match: '(<)'
+              captures:
+                1: support.function
+              push:
+                - meta_scope: string
+                - match: '(>)'
+                  captures:
+                    1: support.function
+                  pop: true
+                - include: path_value
+            - match: $
+              pop: true
+            - include: path_value
+        - match: '^[ \t]*([\w-]+)[ \t]*(=>?)(?!>)'
+          captures:
+            1: variable.parameter
+            2: keyword.operator
+          push:
+            - meta_scope: meta.expression
+            - match: $
+              pop: true
+            - include: net_address_value
+            - include: path_value
+            - include: ip_netmask_value
+            - include: bool_value
+            - include: numerics
+            - match: .*
+              scope: string
+  comment:
+    - match: '[\t\ ]*?(?<!\\);--'
+      push:
+        - meta_scope: comment.block
+        - match: '--;'
+          pop: true
+    - match: '[\t\ ]*?(?<!\\)(;.*)'
+      captures:
+        1: comment.line
+      push:
+        - meta_scope: meta.comment.line
+        - match: $
+          pop: true
+  applications:
+    # ExecIfTime(times,weekdays,mdays,months,[timezone]?appname[(appargs]))
+    - match: '\b(ExecIfTime)\b([\ \t]*?)(\(){{timespec}}(?:,(.*))?\?'
+      captures:
+        1: markup.inserted
+        2: invalid
+        3: support.function
+        4: constant.numeric.time
+        5: constant.numeric.wdays
+        6: constant.numeric.mdays
+        7: constant.numeric.months
+        8: constant.numeric.timezone
+      push:
+        - meta_content_scope: variable.parameter
+        - include: applications
+        - match: '(\))'
+          captures:
+            1: support.function
+          pop: true
+        - match: '(.*?)'
+          captures:
+            1: invalid
+    # ExecIf(expression?appiftrue:[appiffalse])
+    - match: '\b(ExecIf)\b([\ \t]*?)(\()'
+      captures:
+        1: markup.inserted
+        2: invalid
+        3: support.function
+      push:
+        - meta_content_scope: variable.parameter
+        - include: expressions
+        - include: applications
+        - match: '(\:|\?)'
+          captures:
+            1: support.function
+        - match: '(\))'
+          captures:
+            1: support.function
+          pop: true
+        - match: '(.*?)'
+          captures:
+            1: invalid
+    - match: '\b((?:Try)?Exec)\b([\ \t]*?)(\()'
+      captures:
+        1: markup.inserted
+        2: invalid
+        3: support.function
+      push:
+        - meta_scope: keyword.operator
+        - match: '(\))'
+          captures:
+            1: support.function
+          pop: true
+        - include: applications
+        - match: '(.*?)'
+          captures:
+            1: invalid
+    - match: '\b(Zapateller|While|WaitUntil|WaitForSilence|WaitForRing|WaitForNoise|WaitExten|WaitDigit|Wait|VoiceMailPlayMsg|VoiceMailMain|VoiceMail|Verbose|VMSayName|VMAuthenticate|UserEvent|UnpauseQueueMember|UnpauseMonitor|TrySystem|Transfer|TestServer|TestClient|System|StreamEcho|StopPlayTones|StopMusicOnHold|StopMonitor|StopMixMonitor|StatsD|Stasis|StartMusicOnHold|StackPop|SpeechUnloadGrammar|SpeechStart|SpeechProcessingSound|SpeechLoadGrammar|SpeechDestroy|SpeechDeactivateGrammar|SpeechCreate|SpeechBackground|SpeechActivateGrammar|SoftHangup|SkelGuessNumber|SetCallerPres|SetAMAFlags|Set|SendURL|SendText|SendImage|SendFAX_res_fax|SendFAX_app_fax|SendDTMF|SayUnixTime|SayPhonetic|SayNumber|SayDigits|SayCountedNoun|SayCountedAdj|SayAlphaCase|SayAlpha|SMS|SLATrunk|SLAStation|SIPSendCustomINFO|SIPRemoveHeader|SIPDtmfMode|SIPAddHeader|Ringing|Return|RetryDial|ResetCDR|RemoveQueueMember|Record|ReceiveFAX_res_fax|ReceiveFAX_app_fax|ReadExten|Read|RaiseException|QueueUpdate|QueueLog|Queue|Progress|Proceeding|PrivacyManager|Playback|PlayTones|PickupChan|Pickup|PauseQueueMember|PauseMonitor|ParkedCall|ParkAndAnnounce|Park|Page|Originate|OSPNext|OSPLookup|OSPFinish|OSPAuth|ODBC_Rollback|ODBC_Commit|ODBCFinish|NoOp|NoCDR|NBScat|MusicOnHold|Morsecode|Monitor|MixMonitor|MinivmRecord|MinivmNotify|MinivmMWI|MinivmGreet|MinivmDelete|MinivmAccMess|Milliwatt|MessageSend|MeetMeCount|MeetMeChannelAdmin|MeetMeAdmin|MeetMe|MailboxExists|MacroIf|MacroExit|MacroExclusive|Macro|MSet|MP3Player|Log|JabberStatus_res_xmpp|JabberSend_res_xmpp|JabberSendGroup_res_xmpp|JabberLeave_res_xmpp|JabberJoin_res_xmpp|JACK|Incomplete|ImportVar|IVRDemo|ICES|IAX2Provision|HangupCauseClear|Hangup|GotoIfTime|GotoIf|Goto|GosubIf|Gosub|GetCPEID|ForkCDR|FollowMe|Flash|Festival|ExternalIVR|ExtenSpy|ExitWhile|ExecIf|EndWhile|Echo|EAGI|DumpChan|Directory|Dictate|Dial|DeadAGI|DateTime|DISA|DBdeltree|DBdel|DAHDISendKeypadFacility|DAHDISendCallreroutingFacility|DAHDIScan|DAHDIRAS|DAHDIAcceptR2Call|ControlPlayback|ContinueWhile|Congestion|ConfBridge|ClearHash|ChannelRedirect|ChangeMonitor|ChanSpy|ChanIsAvail|CallCompletionRequest|CallCompletionCancel|CELGenUserEvent|Busy|BridgeWait|BridgeAdd|Bridge|BackgroundDetect|BackGround|Authenticate|Answer|AlarmReceiver|AgentRequest|AgentLogin|AddQueueMember|AMD|AGI|AELSub|ADSIProg)\b'
+      captures:
+        1: markup.inserted
+      push:
+        - meta_scope: keyword.operator
+        - match: '(.*?)(\()'
+          captures:
+            1: invalid
+            2: support.function
+          set:
+            - meta_content_scope: variable.parameter
+            - match: '(\))'
+              captures:
+                1: support.function
+              pop: true
+            - include: functions
+            - include: expressions
+            - include: variables
+            - include: brackets
+            - include: net_address_value
+            - include: path_value
+            - include: ip_netmask_value
+            - include: bool_value
+            - include: numerics
+            - include: keywords
+            - include: strings
+        - match: ''
+          pop: true
+  functions:
+    - match: \b(SHELL)\b([\ \t]*?)(\()
+      captures:
+          1: markup.inserted
+          2: invalid
+          3: meta.function-call
+      push:
+        - meta_content_scope: string.unquoted
+        - include: variables
+        - match: (\))
+          captures:
+            1: meta.function-call
+          pop: true
+    #   push: Packages/ShellScript/Bash.sublime-syntax
+    #   with_prototype:
+    #     - match: \)\}
+    #       pop: true
+    - match: '\b(VOLUME|VM_INFO|VMCOUNT|VERSION|VALID_EXTEN|URIENCODE|URIDECODE|UNSHIFT|UNLOCK|TXTCIDNAME|TRYLOCK|TOUPPER|TOLOWER|TIMEOUT|TESTTIME|TALK_DETECT|SYSINFO|STRREPLACE|STRPTIME|STRFTIME|STAT|STACK_PEEK|SRVRESULT|SRVQUERY|SQL_ESC|SPRINTF|SPEECH_TEXT|SPEECH_SCORE|SPEECH_RESULTS_TYPE|SPEECH_GRAMMAR|SPEECH_ENGINE|SPEECH|SORT|SMDI_MSG_RETRIEVE|SMDI_MSG|SIP_HEADER|SIPPEER|SHIFT|SHARED|SHA1|SET|REPLACE|REGEX|REDIRECTING|REALTIME_STORE|REALTIME_HASH|REALTIME_FIELD|REALTIME_DESTROY|REALTIME|RAND|QUOTE|QUEUE_WAITING_COUNT|QUEUE_VARIABLES|QUEUE_MEMBER_PENALTY|QUEUE_MEMBER_LIST|QUEUE_MEMBER_COUNT|QUEUE_MEMBER|QUEUE_GET_CHANNEL|QUEUE_EXISTS|PUSH|PRESENCE_STATE|PP_EACH_USER|PP_EACH_EXTENSION|POP|PJSIP_SEND_SESSION_REFRESH|PJSIP_MEDIA_OFFER|PJSIP_HEADER|PJSIP_ENDPOINT|PJSIP_DTMF_MODE|PJSIP_DIAL_CONTACTS|PJSIP_CONTACT|PJSIP_AOR|PITCH_SHIFT|PERIODIC_HOOK|PASSTHRU|ODBC_[\w\d]*|ODBC_FETCH|ODBC|MUTEAUDIO|MIXMONITOR|MINIVMCOUNTER|MINIVMACCOUNT|MESSAGE_DATA|MESSAGE|MEETME_INFO|MD5|MATH|MASTER_CHANNEL|MAILBOX_EXISTS|LOCK|LOCAL_PEEK|LOCAL|LISTFILTER|LEN|KEYPADHASH|JITTERBUFFER|JABBER_STATUS_res_xmpp|JABBER_RECEIVE_res_xmpp|ISNULL|INC|IMPORT|IFTIME|IFMODULE|IF|ICONV|IAXVAR|IAXPEER|HOLD_INTERCEPT|HINT|HASHKEYS|HASH|HANGUPCAUSE_KEYS|HANGUPCAUSE|GROUP_MATCH_COUNT|GROUP_LIST|GROUP_COUNT|GROUP|GLOBAL|FRAME_TRACE|FILTER|FILE_FORMAT|FILE_COUNT_LINE|FILE|FIELDQTY|FIELDNUM|FEATUREMAP|FEATURE|FAXOPT_res_fax|EXTENSION_STATE|EXISTS|EXCEPTION|EVAL|ENV|ENUMRESULT|ENUMQUERY|ENUMLOOKUP|DUNDIRESULT|DUNDIQUERY|DUNDILOOKUP|DIALPLAN_EXISTS|DIALGROUP|DEVICE_STATE|DENOISE|DEC|DB_KEYS|DB_EXISTS|DB_DELETE|DB|CUT|CURLOPT|CURL|CSV_QUOTE|CONNECTEDLINE|CONFBRIDGE_INFO|CONFBRIDGE|CHECKSIPDOMAIN|CHANNELS|CHANNEL|CDR_PROP|CDR|CALLERPRES|CALLERID|CALLCOMPLETION|CALENDAR_WRITE|CALENDAR_QUERY_RESULT|CALENDAR_QUERY|CALENDAR_EVENT|CALENDAR_BUSY|BLACKLIST|BASE64_ENCODE|BASE64_DECODE|AUDIOHOOK_INHERIT|AST_SORCERY|AST_CONFIG|ARRAY|AMI_CLIENT|AGENT|AGC|AES_ENCRYPT|AES_DECRYPT)\b([\ \t]*?)(\()'
+      captures:
+        1: markup.inserted
+        2: invalid
+        3: meta.function-call
+      push:
+        - meta_content_scope: meta.function.parameters
+        - match: (\))
+          captures:
+            1: meta.function-call
+          pop: true
+        - include: functions
+        - include: brackets
+        - include: expressions
+        - include: variables
+        - include: net_address_value
+        - include: path_value
+        - include: ip_netmask_value
+        - include: bool_value
+        - include: numerics
+        - include: keywords
+        - include: strings
+    - match: '\b((?i)ATAN2|POW|REMAINDER)\b([\ \t]*?)(\()'
+      captures:
+        1: markup.inserted
+        2: invalid
+        3: support.function
+      push:
+        - meta_scope: meta.function.parameters.x
+        - match: '(,)'
+          captures:
+            1: support.function
+          set:
+            - meta_scope: meta.function.parameters.y
+            - match: (\))
+              captures:
+                1: support.function
+              pop: true
+            - include: numerics
+            - include: variables
+            - include: operators
+        - include: numerics
+        - include: variables
+        - include: operators
+    - match: '\b((?i)ACOS|ASIN|ATAN|CEIL|COS|EXP|EXP2|FLOOR|LOG10|LOG2|LOG|RINT|ROUND|SIN|SQRT|TAN|TRUNC)\b([\ \t]*?)(\()'
+      captures:
+        1: markup.inserted
+        2: invalid
+        3: support.function
+      push:
+        - meta_scope: meta.function.parameters
+        - match: (\))
+          captures:
+            1: support.function
+          pop: true
+        - include: numerics
+        - include: variables
+        - include: operators
+  expressions:
+    - match: '(\$\[)'
+      captures:
+        1: variable.parameter
+      push:
+        - meta_scope: meta.variable.parameter
+        - match: '(?<!\\)(\])'
+          captures:
+            1: variable.parameter
+          pop: true
+        - include: functions
+        - include: expressions
+        - include: variables
+        - include: bool_value
+        - include: numerics
+        - include: operators
+        - include: keywords
+  operators:
+    - match: (?<!\\)({{operators}})
+      scope: keyword.operator
+  keywords:
+    - match: (?<!\\)(=|>|<|!=|-|\+|&|\||,|"|\?|:)
+      scope: keyword.operator
+  strings:
+    - match: '[\w-]+'
+      scope: string.unquoted
+  variables:
+    - match: '(\$\{)'
+      captures:
+        1: constant.numeric
+      push:
+        - meta_content_scope: constant.numeric
+        - match: '(\})'
+          captures:
+            1: constant.numeric
+          pop: true
+        - include: variables
+        - include: functions
+        - include: net_address_value
+        - include: path_value
+        - include: ip_netmask_value
+        - include: bool_value
+        - include: numerics
+  bool_value:
+    - match: \b((?i)true|false|yes|no|all|none)\b
+      scope: constant.numeric
+  brackets:
+    - match: (\()
+      # captures:
+        # 1: invalid
+      push:
+        - meta_scope: meta.brackets
+        - match: (\))
+          # captures:
+            # 1: invalid
+          pop: true
+        - include: variables
+        - include: brackets
+        - include: net_address_value
+        - include: path_value
+        - include: ip_netmask_value
+        - include: bool_value
+        - include: numerics
+        - include: keywords
+        - include: strings
+    - match: (\))
+      captures:
+        1: invalid
+  ip_netmask_value:
+    - match: '\b((?<ip>(?<x>(25[0-5])|(2[0-4]\d)|([01]?\d{1,2}))(\.\g<x>){3})(\/\g<ip>)?)\b'
+      scope: constant.other
+  net_address_value:
+    - match: '((?:[a-zA-Z]+:\/\/)?(?:(?:\w+:)?\w+@)?(?:[\w-]+\.)+[a-zA-Z-]+(?::\d+)?)'
+      scope: constant.other
+  numerics:
+    - match: '(?:(?<![\w])-)?\b\d+(?:\.\d+)?\b'
+      scope: constant.other
+  path_value:
+    - match: '(\/[\w-]+)+(\.[\w-]+)*'
+      scope: constant.other
