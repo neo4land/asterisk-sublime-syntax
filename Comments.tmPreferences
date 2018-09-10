@@ -5,7 +5,7 @@
   <key>name</key>
 	<string>Comments</string>
 	<key>scope</key>
-	<string>entity.asterisk.conf</string>
+	<string>asterisk.meta.struct.config</string>
 	<key>settings</key>
 	<dict>
 		<key>shellVariables</key>
@@ -33,4 +33,4 @@
 	<key>uuid</key>
 	<string>db3f61b8-020c-48e9-b0c4-d0183b6ad2e0</string>
 </dict>
-</plist>
+</plist> 
