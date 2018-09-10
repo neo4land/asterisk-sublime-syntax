@@ -1,0 +1,184 @@
+{
+    "author": "Kirill Gerasimov",
+    "variables":
+    {
+        "aliceblue": "#f0f8ff",
+        "aquamarine": "#7fffd4",
+        "aquamarine4": "#458b74",
+        "azure1": "#f0ffff",
+        "burlywood2": "#eec591",
+        "cadetblue3": "#7ac5cd",
+        "cornflowerblue": "#6495ed",
+        "darkorange": "#ff8c00",
+        "darkorange2": "#ee7600",
+        "dodgerblue1": "#1e90ff",
+        "dodgerblue3": "#1874cd",
+        "khaki3": "#cdc673",
+        "lightyellow1": "#ffffe0",
+        "limegreen": "#32cd32",
+        "mediumpurple3": "#8968cd",
+        "mediumpurple4": "#5d478b",
+        "mediumseagreen": "#3cb371",
+        "purple3": "#7d26cd",
+        "red2": "#ee0000",
+        "red3": "#cd0000",
+        "salmon2": "#ee8262",
+        "salmon3": "#cd7054",
+        "slateblue3": "#6959cd",
+        "tan2": "#ee9a49",
+        "tan3": "#cd853f",
+        "violetred1": "#ff3e96",
+        "wheat2": "#eed8ae",
+        "yellow2": "#eeee00",
+        "yellow3": "#cdcd00"
+    },
+    "rules":
+    [
+        {
+            "name": "Asterisk config",
+            "scope": "asterisk.meta.struct.config, asterisk.meta.context, asterisk.entity, asterisk.application.parameter, asterisk.function.parameter",
+            "foreground": "var(azure1)"
+        },
+// comment.block
+        {
+            "name": "Numerics",
+            "scope": "asterisk.constant.numeric.float, asterisk.constant.numeric.integer",
+            "foreground": "var(dodgerblue1)"
+        },
+        {
+            "name": "Net adress",
+            "scope": "asterisk.constant.other.net",
+            "foreground": "var(aquamarine)",
+            "font_style": "italic underline"
+        },
+        {
+            "name": "Context keyword",
+            "scope": "asterisk.context.keyword.control",
+            "foreground": "var(aliceblue)"
+        },
+// asterisk.entity.constant
+// asterisk.entity.extension
+// asterisk.entity.hint
+// asterisk.entity.include
+// asterisk.entity.switch
+// asterisk.function.parameter.x
+// asterisk.function.parameter.y
+        {
+            "scope": "asterisk.keyword.operator",
+            "foreground": "var(red3)"
+        },
+        {
+            "scope": "asterisk.keyword.operator.word",
+            "foreground": "var(slateblue3)"
+        },
+        {
+            "scope": "asterisk.meta.brackets",
+            "foreground": "var(khaki3)"
+        },
+        {
+            "scope": "asterisk.string.quoted.double, asterisk.string.quoted.other",
+            "foreground": "var(lightyellow1)"
+        },
+        {
+            "scope": "asterisk.string.unquoted",
+            "foreground": "var(wheat2)"
+        },
+        {
+            "scope": "asterisk.context.definition.brackets",
+            "foreground": "var(purple3)",
+            "font_style": "bold"
+        },
+        {
+            "scope": "asterisk.context.macro.prefix",
+            "foreground": "var(cadetblue3)",
+            "font_style": "italic"
+        },
+        {
+            "scope": "asterisk.context.name",
+            "foreground": "var(dodgerblue3)"
+        },
+        {
+            "scope": "asterisk.context.template.brackets",
+            "foreground": "var(cornflowerblue)"
+        },
+        {
+            "scope": "asterisk.context.template.exclamation",
+            "foreground": "var(red2)",
+            "font_style": "bold"
+        },
+        {
+            "scope": "asterisk.extension.keyword",
+            "foreground": "var(darkorange2)"
+        },
+        {
+            "scope": "asterisk.extension.operator",
+            "foreground": "var(red2)"
+        },
+        {
+            "scope": "asterisk.extension.literal",
+            "foreground": "var(tan3)"
+        },
+        {
+            "scope": "asterisk.extension.pattern",
+            "foreground": "var(tan2)"
+        },
+        {
+            "scope": "asterisk.extension.priority",
+            "foreground": "var(blue)"
+        },
+        {
+            "scope": "asterisk.extension.offset",
+            "foreground": "var(blue)"
+        },
+        {
+            "scope": "asterisk.extension.alias",
+            "foreground": "var(violetred1)"
+        },
+        {
+            "scope": "asterisk.application.keyword",
+            "foreground": "var(yellow2)"
+        },
+        {
+            "scope": "asterisk.application.brackets, asterisk.application.punctuation, asterisk.support.borders",
+            "foreground": "var(yellow3)"
+        },
+        {
+            "scope": "asterisk.context.parameter.name",
+            "foreground": "var(darkorange)"
+        },
+        {
+            "scope": "asterisk.constant.numeric.time, asterisk.constant.numeric.wdays, asterisk.constant.numeric.mdays, asterisk.constant.numeric.months, asterisk.constant.numeric.timezone",
+            "foreground": "var(limegreen)",
+            "font_style": "italic"
+        },
+        {
+            "scope": "asterisk.constant.other.ip, asterisk.constant.other.path",
+            "foreground": "var(burlywood2)"
+        },
+        {
+            "scope": "asterisk.function.keyword",
+            "foreground": "var(mediumseagreen)"
+        },
+        {
+            "scope": "asterisk.function.brackets, asterisk.function.punctuation",
+            "foreground": "var(aquamarine4)"
+        },
+        {
+            "scope": "asterisk.expression.brackets",
+            "foreground": "var(salmon3)"
+        },
+        {
+            "scope": "asterisk.expression.parameter",
+            "foreground": "var(salmon2)",
+            "font_style": "italic"
+        },
+        {
+            "scope": "asterisk.variable.brackets",
+            "foreground": "var(mediumpurple4)"
+        },
+        {
+            "scope": "asterisk.variable.parameter",
+            "foreground": "var(mediumpurple3)"
+        }
+    ]
+}
