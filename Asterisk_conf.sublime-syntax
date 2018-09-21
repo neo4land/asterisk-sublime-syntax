@@ -20,8 +20,9 @@ variables:
 contexts:
   prototype:
     - include: comment
+    - include: includes
   main:
-    - match: '(\[)(macro-)?({{context_name}})(\])(?:(\()(?:(!)|((?:[^[:cntrl:]\;\ \],]|(?<=\\)\;)*?))((?:,(?:[^[:cntrl:]\;\ \],]|(?<=\\)\;)*?)*)(\)))?'
+    - match: '^[ \t]*(\[)(macro-)?({{context_name}})(\])(?:(\()(?:(!)|((?:[^[:cntrl:]\;\ \],]|(?<=\\)\;)*?))((?:,(?:[^[:cntrl:]\;\ \],]|(?<=\\)\;)*?)*)(\)))?'
       captures:
         1: asterisk.context.definition.brackets
         2: asterisk.context.macro.prefix
@@ -34,7 +35,7 @@ contexts:
         9: asterisk.context.template.brackets
       push:
         - meta_scope: asterisk.meta.context
-        - match: '(?=\[)'
+        - match: '(?=[ \t]*\[)'
           pop: true
         - match: '^[ \t]*(exten)[ \t]*(=>?)[ \t]*([\w\-\*]+),(hint),'
           captures:
@@ -78,7 +79,7 @@ contexts:
             - match: $
               pop: true
             - include: applications
-        - match: '^[ \t]*(ignorepat)[ \t]*(=>)[ \t]*(\d)'
+        - match: '^[ \t]*(ignorepat)[ \t]*(=>)[ \t]*(_?(?:\d|Z|X|N|(?:\[\d-?\d+\]))+)'
           captures:
             1: asterisk.extension.keyword
             2: asterisk.extension.operator
@@ -97,34 +98,6 @@ contexts:
             - match: $
               pop: true
             - include: variables
-        - match: '^[ \t]*(\#include|\#exec)[ \t]*?'
-          captures:
-            1: asterisk.context.keyword.control
-          push:
-            - meta_scope: asterisk.entity.include
-            - match: '(?<!\\)(")'
-              captures:
-                1: asterisk.support.borders
-              push:
-                - meta_scope: asterisk.string.quoted.double
-                - match: '(?<!\\)(")'
-                  captures:
-                    1: asterisk.support.borders
-                  pop: true
-                - include: path_value
-            - match: '(<)'
-              captures:
-                1: asterisk.support.borders
-              push:
-                - meta_scope: asterisk.string.quoted.other
-                - match: '(>)'
-                  captures:
-                    1: asterisk.support.borders
-                  pop: true
-                - include: path_value
-            - match: $
-              pop: true
-            - include: path_value
         - match: '^[ \t]*([\w-]+)[ \t]*(=>?)'
           captures:
             1: asterisk.context.parameter.name
@@ -139,19 +112,9 @@ contexts:
             - include: ip_netmask_value
             - include: bool_value
             - include: numerics
-  comment:
-    - match: '[\t\ ]*?(?<!\\);--'
-      push:
-        - meta_scope: comment.block
-        - match: '--;'
-          pop: true
-    - match: '[\t\ ]*?(?<!\\)(;.*)'
-      captures:
-        1: comment.line
-      push:
-        - meta_scope: meta.comment.line
-        - match: $
-          pop: true
+#===========================
+#======= APLICATIONS =======
+#===========================
   applications:
     # ExecIfTime(times,weekdays,mdays,months,[timezone]?appname[(appargs]))
     - match: '\b(ExecIfTime)\b([\ \t]*?)(\(){{timespec}}(?:,(.*))?\?'
@@ -233,12 +196,14 @@ contexts:
             2: asterisk.application.brackets
           set:
             - meta_content_scope: asterisk.application.parameter
+            - include: escape
             - match: '(\))'
               captures:
                 1: asterisk.application.brackets
               pop: true
             - include: functions
             - include: expressions
+            - include: sys_vars
             - include: variables
             - include: brackets
             - include: net_address_value
@@ -250,6 +215,9 @@ contexts:
             - include: strings
         - match: ''
           pop: true
+#===========================
+#======== FUNCTIONS ========
+#===========================
   functions:
     - match: \b(SHELL)\b([\ \t]*?)(\()
       captures:
@@ -275,6 +243,7 @@ contexts:
         3: asterisk.function.brackets
       push:
         - meta_content_scope: asterisk.function.parameter
+        - include: escape
         - match: (\))
           captures:
             1: asterisk.function.brackets
@@ -283,6 +252,7 @@ contexts:
         - include: brackets
         - include: expressions
         - include: variables
+        - include: sys_vars
         - include: net_address_value
         - include: path_value
         - include: ip_netmask_value
@@ -326,30 +296,70 @@ contexts:
         - include: numerics
         - include: variables
         - include: operators
+#===========================
+#===========================
+  includes:
+    - match: '^[ \t]*(\#include|\#exec)[ \t]*?'
+      captures:
+        1: asterisk.context.keyword.control
+      push:
+        - meta_scope: asterisk.entity.include
+        - match: '(?<!\\)(")'
+          captures:
+            1: asterisk.support.borders
+          push:
+            - meta_scope: asterisk.string.quoted.double
+            - match: '(?<!\\)(")'
+              captures:
+                1: asterisk.support.borders
+              pop: true
+            - include: escape
+            - include: path_value
+        - match: '(<)'
+          captures:
+            1: asterisk.support.borders
+          push:
+            - meta_scope: asterisk.string.quoted.other
+            - match: '(>)'
+              captures:
+                1: asterisk.support.borders
+              pop: true
+            - include: escape
+            - include: path_value
+        - match: $
+          pop: true
+        - include: escape
+        - include: path_value
   expressions:
     - match: '(\$\[)'
       captures:
         1: asterisk.expression.brackets
       push:
-        - meta_scope: asterisk.expression.parameter
-        - match: '(?<!\\)(\])'
+        - meta_content_scope: asterisk.expression.parameter
+        - include: escape
+        - match: '(\])'
           captures:
             1: asterisk.expression.brackets
           pop: true
         - include: functions
         - include: expressions
+        - include: sys_vars
         - include: variables
         - include: bool_value
         - include: numerics
         - include: operators
         - include: keywords
-  operators:
-    - match: (?<!\\)({{operators}})
-      scope: asterisk.keyword.operator
-  keywords:
-    - match: (?<!\\)(=|>|<|!=|-|\+|&|\||,|"|\?|:)
-      scope: asterisk.keyword.operator
+        - include: strings
   strings:
+    - include: escape
+    - match: '"'
+      push:
+        - meta_scope: asterisk.string.quoted.double
+        - include: escape
+        - include: expressions
+        - include: variables
+        - match: '"'
+          pop: true
     - match: '[\w-]+'
       scope: asterisk.string.unquoted
   variables:
@@ -358,27 +368,32 @@ contexts:
         1: asterisk.variable.brackets
       push:
         - meta_content_scope: asterisk.variable.parameter
+        - include: escape
         - match: '(\})'
           captures:
             1: asterisk.variable.brackets
           pop: true
-        - include: variables
         - include: functions
+        - include: variables
+        - include: sys_vars
         - include: net_address_value
         - include: path_value
         - include: ip_netmask_value
         - include: bool_value
         - include: numerics
-  bool_value:
-    - match: \b((?i)true|false|yes|no|all|none)\b
-      scope: asterisk.keyword.operator.word
   brackets:
     - match: (\()
+      # captures:
+        # 1: invalid
       push:
         - meta_scope: asterisk.meta.brackets
+        - include: escape
         - match: (\))
+          # captures:
+            # 1: invalid
           pop: true
         - include: variables
+        - include: sys_vars
         - include: brackets
         - include: net_address_value
         - include: path_value
@@ -387,6 +402,18 @@ contexts:
         - include: numerics
         - include: keywords
         - include: strings
+    # - match: (\))
+    #   captures:
+    #     1: invalid
+  operators:
+    - match: ({{operators}})
+      scope: asterisk.keyword.operator
+  keywords:
+    - match: (=|>|<|!=|-|\+|&|\||,|\?|:)
+      scope: asterisk.keyword.operator
+  bool_value:
+    - match: \b((?i)true|false|yes|no|all|none)\b
+      scope: asterisk.keyword.operator.word
   ip_netmask_value:
     - match: '\b((?<ip>(?<x>(25[0-5])|(2[0-4]\d)|([01]?\d{1,2}))(\.\g<x>){3})(\/\g<ip>)?)\b'
       scope: asterisk.constant.other.ip
@@ -401,3 +428,22 @@ contexts:
   path_value:
     - match: '((?:[\w-]*\/[\w-]*)+)(\.[\w-]+)*'
       scope: asterisk.constant.other.path
+  sys_vars:
+    - match: '\b(WAITSTATUS|VPB_GETDTMF|VOICEMAIL_PLAYBACKSTATUS|VM(?:STATUS|BOXEXISTSSTATUS|_(?:NAME|M(?:SGNUM|ESSAGEFILE)|D(?:UR|ATE)|C(?:IDN(?:UM|AME)|A(?:TEGORY|LLERID))))|UPQMSTATUS|UNIQUEID|TXTCIDNAME(?:STATUS)?|TRANSFER(?:STATUS|_CONTEXT)|TOUCH_(?:MONITOR(?:_(?:PREF|OUTPUT|MESSAGE_(?:STOP|START)|FORMAT)?|MIXMONITOR(?:_(?:OUTPUT|FORMAT))?))|TIMESTAMP|TALK_DETECTED|SYSTEM(?:STATUS|NAME)|SPYGROUP|SMDI_VM_TYPE|SIP(?:U(?:SERAGENT|RI)|(?:FROM)?DOMAIN|CALLID|_(?:URI_OPTIONS|RECVADDR|MAX_FORWARDS|CODEC(?:_(?:OUT|IN)BOUND)?))|SEND(?:URL|TEXT|IMAGE)STATUS|RTP(?:VIDE|AUDI)OQOS|RQMSTATUS|REDIRECTING_CALLE[RE]_SEND_MACRO(?:_ARGS)?|RECORDED_FILE|QUEUE(?:STATUS|POSITION|_(?:PRIO|(?:MIN|MAX)_PENALTY))|PRI(?:VACYMGRSTATUS|REDIRECTREASON|ORITY)|PQMSTATUS|PLAYBACKSTATUS|PARKEDAT|OUTBOUND_GROUP|OSP(?:OUT(?:T(?:OKEN|IMELIMIT|ECH)|SP(?:N|ID)|OCN|NP(?:RN|DI|CIC)|NETWORKID|MNC|MCC|HANDLE|CALL(?:I(?:NG|D(?:TYPES)?)|ED)|AUDIOQOS|ALTSPN)|NEXTSTATUS|LOOKUPSTATUS|IN(?:TO(?:KEN|HOST)|TIMELIMIT|SP(?:N|ID)|PEERIP|OCN|NP(?:RN|DI|CIC)|NETWORKID|MNC|MCC|HANDLE|DIV(?:USER|HOST)|CUSTOMINFO[1-8]|AUDIOQOS|ALTSPN)|FINISHSTATUS|D(?:IALSTR|EST(?:REMAILS|INATION))|AUTHSTATUS)|MONITOR(?:_(?:FILENAME|EXEC_ARGS|EXEC))?|MEETME(?:SECS|BOOKID|_(?:RECORDING(?:FORMAT|FILE)|EXIT_(?:KEY|CONTEXT)|AGI_BACKGROUND))|MACRO_(?:PRIORITY|OFFSET|EXTEN|CONTEXT)|LOOKUPBLSTATUS|LIMIT_(?:(?:WARNING|TIMEOUT|CONNECT)_FILE|PLAYAUDIO_CALLE[ER])|LANGUAGE|INVALID_EXTEN|HINT(?:NAME)?|HASVMSTATUS|HANGUPCAUSE|GOTO_ON_BLINDXFR|GOSUB_RETVAL|FORWARD_CONTEXT|FAXEXTEN|EX(?:TEN|ITCONTEXT)|EPOCH|ENUM(?:STATUS)?|ENTITYID|DYNAMIC_(?:PEERNAME|FEATURE(?:S|NAME))|DUND(?:TECH|DEST)|DIAL(?:STATUS|ED(?:TIME|PEERN(?:UMBER|AME)))|DBGETSTATUS|DB_RESULT|DATETIME|CURL|CPLAYBACKSTATUS|CON(?:TEXT|NECTED_LINE_CALLE[ER]_SEND_MACRO(?:_ARGS)?|F_LIMIT_(?:WARNING_FILE|TIMEOUT_FILE))|CHECK(?:MD5STATUS|GROUPSTATUS)|CHANNEL|CALL(?:TYPE|EDTON|ING(?:TON|TNS|SUBADDR|PRES|ANI2))|CALENDAR_SUCCESS|BRIDGEP(?:VTCALLID|EER)|BLINDTRANSFER|AVAIL(?:STATUS|ORIGCHAN|CHAN)|AUTH_(?:MAILBOX|CONTEXT)|AQMSTATUS|ANSWEREDTIME|ANI2|AGI(?:STATUS|EXITONHANGUP)|AGENT(?:WRAPUPTIME|UPDATECDR|STATUS|NUMBER|MAXLOGINTRIES|GOODBYE|EXTEN|AUTOLOGOFF|ACKCALL))\b'
+      scope: asterisk.variable.sysvarname
+  comment:
+    - match: '[\t\ ]*?(?<!\\);--'
+      push:
+        - meta_scope: comment.block
+        - match: '--;'
+          pop: true
+    - match: '[\t\ ]*?(?<!\\)(;.*)'
+      captures:
+        1: comment.line
+      push:
+        - meta_scope: meta.comment.line
+        - match: $
+          pop: true
+  escape:
+    - match: '(\\\S)'
+      scope: asterisk.string.quoted
