@@ -6,6 +6,7 @@
         "aquamarine": "#7fffd4",
         "aquamarine4": "#458b74",
         "azure1": "#f0ffff",
+        "blue": "#0000ff",
         "burlywood2": "#eec591",
         "cadetblue3": "#7ac5cd",
         "cornflowerblue": "#6495ed",
@@ -24,20 +25,23 @@
         "red3": "#cd0000",
         "salmon2": "#ee8262",
         "salmon3": "#cd7054",
+        "slateblue1": "#836fff",
         "slateblue3": "#6959cd",
         "tan2": "#ee9a49",
         "tan3": "#cd853f",
         "violetred1": "#ff3e96",
         "wheat2": "#eed8ae",
         "yellow2": "#eeee00",
-        "yellow3": "#cdcd00"
+        "yellow3": "#cdcd00",
+        "yellowgreen": "#9acd32"
     },
     "rules":
     [
         {
             "name": "Asterisk config",
-            "scope": "asterisk.meta.struct.config, asterisk.meta.context, asterisk.entity, asterisk.application.parameter, asterisk.function.parameter",
-            "foreground": "var(azure1)"
+            "scope": "asterisk.meta.struct.config, asterisk.meta.context, asterisk.entity, asterisk.function.parameter",
+            "foreground": "var(azure1)",
+            "font_style": ""
         },
 // comment.block
         {
@@ -76,7 +80,8 @@
             "foreground": "var(khaki3)"
         },
         {
-            "scope": "asterisk.string.quoted.double, asterisk.string.quoted.other",
+            "name": "Strings",
+            "scope": "asterisk.string.quoted",
             "foreground": "var(lightyellow1)"
         },
         {
@@ -139,8 +144,8 @@
             "foreground": "var(yellow2)"
         },
         {
-            "scope": "asterisk.application.brackets, asterisk.application.punctuation, asterisk.support.borders",
-            "foreground": "var(yellow3)"
+            "scope": "asterisk.application.brackets, asterisk.application.punctuation, asterisk.application.parameter, asterisk.support.borders",
+            "foreground": "var(yellowgreen)"
         },
         {
             "scope": "asterisk.context.parameter.name",
@@ -165,12 +170,13 @@
         },
         {
             "scope": "asterisk.expression.brackets",
-            "foreground": "var(salmon3)"
+            "foreground": "var(salmon3)",
+            "font_style": ""
         },
         {
             "scope": "asterisk.expression.parameter",
             "foreground": "var(salmon2)",
-            "font_style": "italic"
+            "font_style": ""
         },
         {
             "scope": "asterisk.variable.brackets",
@@ -179,6 +185,10 @@
         {
             "scope": "asterisk.variable.parameter",
             "foreground": "var(mediumpurple3)"
+        },
+        {
+            "scope": "asterisk.variable.sysvarname",
+            "foreground": "var(slateblue1)"
         }
     ]
 }
