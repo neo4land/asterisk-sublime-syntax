@@ -32,29 +32,24 @@
         "violetred1": "#ff3e96",
         "wheat2": "#eed8ae",
         "yellow2": "#eeee00",
-        "yellow3": "#cdcd00",
         "yellowgreen": "#9acd32"
     },
     "rules":
     [
         {
             "name": "Asterisk config",
-            "scope": "asterisk.meta.struct.config, asterisk.meta.context, asterisk.entity, asterisk.function.parameter",
-            "foreground": "var(azure1)",
-            "font_style": ""
+            "scope": "asterisk.meta",
+            "foreground": "var(azure1)"
+        },
+        {
+            "scope": "asterisk.entity",
+            "foreground": "var(azure1)"
+        },
+        {
+            "scope": "asterisk.shell.command",
+            "foreground": "var(azure1)"
         },
 // comment.block
-        {
-            "name": "Numerics",
-            "scope": "asterisk.constant.numeric.float, asterisk.constant.numeric.integer",
-            "foreground": "var(dodgerblue1)"
-        },
-        {
-            "name": "Net adress",
-            "scope": "asterisk.constant.other.net",
-            "foreground": "var(aquamarine)",
-            "font_style": "italic underline"
-        },
         {
             "name": "Context keyword",
             "scope": "asterisk.context.keyword.control",
@@ -80,13 +75,8 @@
             "foreground": "var(khaki3)"
         },
         {
-            "name": "Strings",
-            "scope": "asterisk.string.quoted",
-            "foreground": "var(lightyellow1)"
-        },
-        {
-            "scope": "asterisk.string.unquoted",
-            "foreground": "var(wheat2)"
+            "scope": "asterisk.support.borders",
+            "foreground": "var(blue)"
         },
         {
             "scope": "asterisk.context.definition.brackets",
@@ -110,6 +100,10 @@
             "scope": "asterisk.context.template.exclamation",
             "foreground": "var(red2)",
             "font_style": "bold"
+        },
+        {
+            "scope": "asterisk.context.parameter.name",
+            "foreground": "var(darkorange)"
         },
         {
             "scope": "asterisk.extension.keyword",
@@ -140,53 +134,85 @@
             "foreground": "var(violetred1)"
         },
         {
-            "scope": "asterisk.application.keyword",
-            "foreground": "var(yellow2)"
+            "name": "Strings",
+            "scope": "asterisk.string.quoted",
+            "foreground": "var(lightyellow1)"
         },
         {
-            "scope": "asterisk.application.brackets, asterisk.application.punctuation, asterisk.application.parameter, asterisk.support.borders",
-            "foreground": "var(yellowgreen)"
+            "scope": "asterisk.string.unquoted",
+            "foreground": "var(wheat2)"
         },
         {
-            "scope": "asterisk.context.parameter.name",
-            "foreground": "var(darkorange)"
+            "name": "Numerics",
+            "scope": "asterisk.constant.numeric",
+            "foreground": "var(dodgerblue1)"
         },
         {
-            "scope": "asterisk.constant.numeric.time, asterisk.constant.numeric.wdays, asterisk.constant.numeric.mdays, asterisk.constant.numeric.months, asterisk.constant.numeric.timezone",
+            "name": "Net adress",
+            "scope": "asterisk.constant.other.net",
+            "foreground": "var(aquamarine)",
+            "font_style": "italic, underline"
+        },
+        {
+            "scope": "asterisk.constant.other", //time,wdays,mdays,months,timezone
             "foreground": "var(limegreen)",
             "font_style": "italic"
         },
         {
-            "scope": "asterisk.constant.other.ip, asterisk.constant.other.path",
+            "scope": "asterisk.constant.other.ip",
             "foreground": "var(burlywood2)"
         },
         {
+            "scope": "asterisk.constant.other.path",
+            "foreground": "var(burlywood2)"
+        },
+        {
+            "name": "Application punctuation",
+            "scope": "asterisk.application.brackets, asterisk.application.punctuation, asterisk.application",
+            "foreground": "var(yellowgreen)"
+        },
+        {
+            "scope": "asterisk.application.keyword",
+            "foreground": "var(yellow2)"
+        },
+        {
+            "scope": "asterisk.application.parameter",
+            "foreground": "var(yellowgreen)"
+        },
+        {
+            "name": "Function punctuation",
+            "scope": "asterisk.function.parameter, asterisk.function",
+            "foreground": "var(aquamarine4)"
+        },
+        {
+            "scope": "asterisk.function.brackets",
+            "foreground": "var(aquamarine4)"
+        },
+        {
+            "name": "Function keyword",
             "scope": "asterisk.function.keyword",
             "foreground": "var(mediumseagreen)"
         },
         {
-            "scope": "asterisk.function.brackets, asterisk.function.punctuation",
-            "foreground": "var(aquamarine4)"
-        },
-        {
             "scope": "asterisk.expression.brackets",
             "foreground": "var(salmon3)",
-            "font_style": ""
         },
         {
             "scope": "asterisk.expression.parameter",
             "foreground": "var(salmon2)",
-            "font_style": ""
         },
         {
+            "name": "Variable borders",
             "scope": "asterisk.variable.brackets",
             "foreground": "var(mediumpurple4)"
         },
         {
+            "name": "Variable body",
             "scope": "asterisk.variable.parameter",
             "foreground": "var(mediumpurple3)"
         },
         {
+            "name": "System variable name",
             "scope": "asterisk.variable.sysvarname",
             "foreground": "var(slateblue1)"
         }
